@@ -1,4 +1,14 @@
 
+Rust playground
+=================================
+
+Repository for experimenting with Rust.
+
+Random
+---------------------------------
+
+
+
 http://rustbyexample.com/index.html
 
 https://medium.com/@tomaka/my-adventures-in-rust-webdev-850c67be6c40
