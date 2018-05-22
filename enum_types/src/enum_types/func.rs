@@ -1,4 +1,4 @@
 
 pub trait MyFunctionality {
-    fn hello() -> i32;
+    fn hello(&self) -> i32;
 }
