@@ -1,17 +1,26 @@
-
 struct Ding {
     opt: Option<i32>,
 }
 
 impl Ding {
-    fn doit(&mut self) -> &mut Option<i32> {
-        &mut self.opt
+    fn doit(self) -> Option<i32> {
+        self.opt
     }
 }
 
 enum RorD {
     D(Ding),
-    R(),
+    R(Ding),
+}
+
+impl RorD {
+    #[inline]
+    fn as_R(self) -> Self {
+        match self {
+            RorD::D(ding) => RorD::R(ding),
+            r => r,
+        }
+    }
 }
 
 struct Wrap {
@@ -22,24 +31,12 @@ impl Wrap {
     fn action(&mut self) {}
 
     fn f(&mut self) {
-        let mut doitres: Option<&mut Option<i32>> = None;
-        {
-            let rd = &mut self.r_or_d;
-            match rd {
-                RorD::D(ref mut d) => {
-                    doitres = Some(d.doit());
-                }
-                RorD::R() => { /* ... */ }
-            }
-        }
-        if let Some(res) = doitres {
-            match res {
-                Some(nr) => { /* ... */ }
-                None => { self.action(); }
-            }
+        let rd = &mut self.r_or_d;
+        match rd {
+            RorD::D(ref mut d) =>
+            RorD::R() => { /* ... */ }
         }
     }
 }
 
-fn main() {
-}
+fn main() {}
