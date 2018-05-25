@@ -25,12 +25,6 @@ impl ReaderOrDelegate {
             reader => reader
         }
     }
-    fn as_delegate(self) -> Self {
-        match self {
-            ReaderOrDelegate::Read(reader) => ReaderOrDelegate::Delegate(AnotherParser { reader }),
-            delegate => delegate
-        }
-    }
 }
 
 struct OneParser {
@@ -41,20 +35,14 @@ impl Parser for OneParser {
     fn parse(&mut self) -> u8 {
         match self.reader_or_delegate {
             ReaderOrDelegate::Delegate(ref mut delegate) => {
-                match delegate.parse() {
-                    0 => {
-                        self.reader_or_delegate = self.reader_or_delegate.as_delegate();
-                        self.parse()
-                    },
-                    x => 2 * x
-                }
+                delegate.parse()
             },
             ReaderOrDelegate::Read(ref mut reader) => {
                 match reader.next() {
-//                    0 => {
-//                        self.reader_or_delegate = self.reader_or_delegate.as_read();
-//                        self.parse()
-//                    },
+                    0 => {
+                        self.reader_or_delegate = self.reader_or_delegate.as_read();
+                        self.parse()
+                    },
                     x => 3 * x
                 }
             },
