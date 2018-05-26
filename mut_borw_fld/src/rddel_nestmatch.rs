@@ -39,14 +39,20 @@ impl Parser for OneParser {
             ReaderOrDelegate::Read(ref mut reader) => {
                 match reader.next() {
                     0 => {
-                        replace(&mut self.reader_or_delegate, ReaderOrDelegate::Delegate(AnotherParser { reader }));
-                        self.parse()
-                    },
-                    x => 3 * x
-                }
-            },
-        }
+                        replace(&mut self.reader_or_delegate, ReaderOrDelegate::Delegate(AnotherParser {
+                            reader: match self.reader_or_delegate {
+                                ReaderOrDelegate::Read(move_reader) => move_reader,
+                                _ => panic!(),
+                            }
+                        }));
+                    self.
+                    parse()
+                },
+                x => 3 * x
+            }
+        },
     }
+}
 }
 
 struct AnotherParser {
