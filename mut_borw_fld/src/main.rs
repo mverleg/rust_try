@@ -1,16 +1,19 @@
 #![feature(nll)]
+use std::cell::RefCell;
 use std::mem::replace;
+use std::rc::Rc;
 
-struct Reader {
+struct Reader_ {
     i: u8,
 }
-impl Reader {
+impl Reader_ {
     fn next(&mut self) -> u8 {
         /* some logic here */
         self.i += 1;
         self.i
     }
 }
+type Reader = Rc<RefCell<Reader_>>;
 
 trait Parser {
     fn parse(&mut self) -> u8;
@@ -28,18 +31,22 @@ impl Parser for OneParser {
     fn parse(&mut self) -> u8 {
         match self.reader_or_delegate {
             ReaderOrDelegate::Delegate(ref mut delegate) => {
-                match delegate.parse() {
+                let del_res = delegate.parse();
+                match del_res {
                     0 => {
-                        replace(&mut self.reader_or_delegate, ReaderOrDelegate::Read(delegate.consume()));
+                        let reader = delegate.reader.clone();
+                        self.reader_or_delegate = ReaderOrDelegate::Read(reader);
                         self.parse()
                     },
                     x => 2 * x
                 }
             },
             ReaderOrDelegate::Read(ref mut reader) => {
-                match reader.next() {
+                let self_res = reader.borrow_mut().next();
+                match self_res {
                     0 => {
-                        replace(&mut self.reader_or_delegate, ReaderOrDelegate::Delegate(AnotherParser { reader }));
+                        let subparser = AnotherParser { reader: reader.clone() };
+                        replace(&mut self.reader_or_delegate, ReaderOrDelegate::Delegate(subparser));
                         self.parse()
                     },
                     x => 3 * x
@@ -50,17 +57,16 @@ impl Parser for OneParser {
 }
 
 struct AnotherParser {
-reader: Reader,
+    reader: Reader,
 }
-impl AnotherParser {
-fn consume( self ) -> Reader {
-self.reader
-    }
-}
+
 impl Parser for AnotherParser {
     fn parse(&mut self) -> u8 {
-        self.reader.next() * 2
+        self.reader.borrow_mut().next() * 2
     }
 }
 
-fn main() {}
+fn main() {
+    let mut parser = OneParser { reader_or_delegate: ReaderOrDelegate::Read(Rc::new(RefCell::new(Reader_{ i: 7 }))) };
+    parser.parse();
+}
