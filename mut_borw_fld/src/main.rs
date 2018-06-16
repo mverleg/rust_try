@@ -42,8 +42,7 @@ impl Parser for OneParser {
                 }
             },
             ReaderOrDelegate::Read(ref mut reader) => {
-                let self_res = reader.borrow_mut().next();
-                match self_res {
+                match reader.borrow_mut().next() {
                     0 => {
                         let subparser = AnotherParser { reader: reader.clone() };
                         replace(&mut self.reader_or_delegate, ReaderOrDelegate::Delegate(subparser));
