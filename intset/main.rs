@@ -10,19 +10,18 @@ use std::ops::{ Rem, Div };
 const BINS: usize = 16;
 
 #[derive(Debug)]
-enum Bin<T: Rem + Div> {
+enum Bin<T: Rem<T> + Div<T> + Into<usize> + From<usize> + Eq> {
     SubSet(IntSet<T>),
     Exists(T),
     Empty,
 }
 
 #[derive(Debug)]
-pub struct IntSet<T: Rem + Div> {
-    has_0: bool, // todo: REMOVE
+pub struct IntSet<T: Rem<T> + Div<T> + Into<usize> + From<usize> + Eq> {
     bins: Vec<Bin<T>>,
 }
 
-impl<T: Rem + Div> IntSet<T> {
+impl<T: Rem<T> + Div<T> + Into<usize> + From<usize> + Eq> IntSet<T> {
     /// Create a new empty integer set.
     pub fn new() -> Self {
         let mut bins: Vec<Bin<T>> = Vec::with_capacity(BINS);
@@ -30,23 +29,15 @@ impl<T: Rem + Div> IntSet<T> {
             bins.push(Bin::Empty);
         }
         IntSet {
-            has_0: false,
             bins: bins,
         }
     }
 
     /// Insert he value into the set. Returns whether an insert was done.
     pub fn insert(&mut self, val: T) -> bool {
-        if val == 0 {
-            if self.has_0 {
-                return false;
-            }
-            self.has_0 = true;
-            return true;
-        }
-        let rem = self.bins[val % BINS];
+        let rem = self.bins[(val % T::from(BINS)).into()];
         match rem {
-            Bin::SubSet(ref mut set) => set.insert(val / BINS),
+            Bin::SubSet(ref mut set) => set.insert(val / T::from(BINS)),
             Bin::Exists(existing) => {
                 if val == existing {
                     return false;
@@ -66,9 +57,6 @@ impl<T: Rem + Div> IntSet<T> {
 
     /// Check whether the set contains the integer value.
     pub fn contains(&self, val: T) -> bool {
-        if val == 0 {
-            return self.has_0;
-        }
         match self.bins[val % BINS] {
             Bin::SubSet(set) => set.contains(val / BINS),
             Bin::Exists(_) => true,
@@ -96,6 +84,19 @@ mod tests {
     use super::IntSet;
 
     #[test]
+    fn test_int_set_types() {
+        let set: IntSet<i8> = IntSet::new();
+        let set: IntSet<i16> = IntSet::new();
+        let set: IntSet<i32> = IntSet::new();
+        let set: IntSet<i64> = IntSet::new();
+        let set: IntSet<u8> = IntSet::new();
+        let set: IntSet<u16> = IntSet::new();
+        let set: IntSet<u32> = IntSet::new();
+        let set: IntSet<u64> = IntSet::new();
+        let set: IntSet<usize> = IntSet::new();
+    }
+
+    #[test]
     fn test_int_set_basic() {
         let mut set = IntSet::new();
         for k in 0 .. 128 {
@@ -104,7 +105,7 @@ mod tests {
         for k in 0 .. 128 {
             assert!(set.contains(k));
         }
-        for k in -1024 .. 0 {
+        for k in -1024i32 .. 0i32 {
             assert!(!set.contains(k));
         }
         for k in 128 .. 1024 {
@@ -129,21 +130,19 @@ mod tests {
     fn test_int_set_collisions() {
         let mut set = IntSet::new();
         // To have a value in the first bin for 6 levels, the last 24 bits should be 0.
-        // To let all the lower levels be created, add at least 6 values.
+        // To let all the lower levels be created, add at least 6 values.s
         for k in 1 .. 9 {
-            assert!(set.insert(k * 2**24));
+            assert!(set.insert(k * 2i32.pow(24)));
         }
         for k in 1 .. 9 {
-            assert!(set.contains(k * 2**24));
+            assert!(set.contains(k * 2i32.pow(24)));
         }
         for k in 0 .. 128 {
             assert!(!set.contains(k));
         }
-        assert!(!set.contains(2**23));
+        assert!(!set.contains(2i32.pow(23)));
         assert_eq!(set.count(), 8);
     }
 }
 
-fn main() {
-
-}
+fn main() {}
