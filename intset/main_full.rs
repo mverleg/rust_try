@@ -7,40 +7,26 @@
 use std::ops::{ Rem, Div };
 
 // Value 16 (4 bits) leads to nicely rounded values: exactly 8 levels for i32, 16 for i64.
-const BINS: u8 = 16;
-
-// I want the types that implement Int to be % and / with their own type, not all Int
-pub trait Int: Rem<T> + Div<T> + Eq<T> + Sized where
-        <T as Div>::Output: Int,
-        <T as Rem>::Output: Int {}
-
-impl Int for i8 {}
-impl Int for i16 {}
-impl Int for i32 {}
-impl Int for i64 {}
-impl Int for u8 {}
-impl Int for u16 {}
-impl Int for u32 {}
-impl Int for u64 {}
-impl Int for usize {}
+const BINS: i32 = 16;
 
 #[derive(Debug)]
 // TODO @mverleg: I need the output of div and rem to be assignable to T
-enum Bin<T: Int> {
+enum Bin<T: Div<T> + Rem<T> + Eq + Into<usize>> {
     SubSet(IntSet<T>),
     Exists(T),
     Empty,
 }
 
 #[derive(Debug)]
-pub struct IntSet<T: Int> {
+pub struct IntSet<T: Div<T> + Rem<T> + Eq + Into<usize>> {
     bins: Vec<Bin<T>>,
 }
 
-impl<T: Int> IntSet<T> {
+impl<T: Div<T> + Rem<T> + Eq + Into<usize>> IntSet<T> {
+
     /// Create a new empty integer set.
     pub fn new() -> Self {
-        let mut bins: Vec<Bin<T>> = Vec::with_capacity(BINS);
+        let mut bins: Vec<Bin<T>> = Vec::with_capacity(BINS.into());
         for k in 0 .. BINS {
             bins.push(Bin::Empty);
         }
@@ -52,45 +38,46 @@ impl<T: Int> IntSet<T> {
     /// Insert he value into the set. Returns whether an insert was done.
     pub fn insert(&mut self, val: T) -> bool {
         let rem = self.bins[(val % T::from(BINS)).into()];
-        match rem {
-            Bin::SubSet(ref mut set) => set.insert(val / T::from(BINS)),
-            Bin::Exists(existing) => {
-                if val == existing {
-                    return false;
-                }
-                let mut subset = Bin::SubSet(IntSet::new());
-                subset.insert(existing);
-                subset.insert(val);
-                self.bins[val % BINS] = subset;
-                return true;
-            },
-            Bin::Empty => {
-                self.bins[val % BINS] = Bin::Exists(val);
-                return true;
-            },
-        }
+//        match rem {
+//            Bin::SubSet(ref mut set) => set.insert(val / T::from(BINS)),
+//            Bin::Exists(existing) => {
+//                if val == existing {
+//                    return false;
+//                }
+//                let mut subset = Bin::SubSet(IntSet::new());
+//                subset.insert(existing);
+//                subset.insert(val);
+//                self.bins[val % BINS] = subset;
+//                return true;
+//            },
+//            Bin::Empty => {
+//                self.bins[val % BINS] = Bin::Exists(val);
+//                return true;
+//            },
+//        }
     }
 
     /// Check whether the set contains the integer value.
     pub fn contains(&self, val: T) -> bool {
-        match self.bins[val % BINS] {
-            Bin::SubSet(set) => set.contains(val / BINS),
-            Bin::Exists(_) => true,
-            Bin::Empty => false,
-        }
+//        match self.bins[val % BINS] {
+//            Bin::SubSet(set) => set.contains(val / BINS),
+//            Bin::Exists(_) => true,
+//            Bin::Empty => false,
+//        }
+        true  // TODO @mverleg: THIS CODE IS TEMPORARY!
     }
 
     /// Gives the number of elements in the set.
     /// This actively counts the elements, so it is not free.
     pub fn count(&self) -> usize {
         let mut sum = 0;
-        for bin in self.bins {
-            sum += match bin {
-                Bin::SubSet(set) => set.count(),
-                Bin::Exists(_) => 1,
-                Bin::Empty => 0,
-            }
-        }
+//        for bin in self.bins {
+//            sum += match bin {
+//                Bin::SubSet(set) => set.count(),
+//                Bin::Exists(_) => 1,
+//                Bin::Empty => 0,
+//            }
+//        }
         return sum;
     }
 }
