@@ -21,15 +21,31 @@ impl Int for usize {}
 //    arg.into()
 //}
 
+trait MyFrom<T> {
+    fn my_from(val: T) -> Self;
+}
+
+impl<T, U: From<T>> MyFrom<T> for U {
+    default fn my_from(val: T) -> U {
+        U::from(val)
+    }
+}
+
+impl MyFrom<i8> for u8 {
+    fn my_from(val: i8) -> Self {
+        val as u8
+    }
+}
+
 //pub fn conv<T>(arg: i32) -> T {
 //where T: Div<i32>, T::Output: Rem<i32, Output = T>
 //pub fn conv<T>(arg: T) -> T where T: From<i32> + Div<T>, T::Output: T {
-pub fn stuff<T>(arg: T) -> T where T: From<u8> + Div<T, Output = T> + Rem<T, Output = T> + Clone {
+pub fn stuff<T>(arg: T) -> T where T: MyFrom<u8> + Div<T, Output = T> + Rem<T, Output = T> + Clone {
     (T::from(BINS) / arg.clone()) % arg
 }
 
 pub fn main() {
-//    stuff(1i8);
+    stuff(1i8);
     stuff(1i16);
     stuff(1i32);
     stuff(1i64);
