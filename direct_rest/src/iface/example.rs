@@ -1,5 +1,4 @@
-
-use iface::restable::Restable;
+use iface::transfer::Transfer;
 use serde_json;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -14,7 +13,7 @@ impl Example {
     }
 }
 
-impl Restable for Example {
+impl Transfer for Example {
     fn encode(&self) -> String {
         serde_json::to_string(&self).unwrap()
     }
@@ -31,7 +30,7 @@ impl Restable for Example {
 #[cfg(test)]
 mod tests {
     use super::Example;
-    use super::Restable;
+    use super::Transfer;
 
     #[test]
     fn test_example() {
