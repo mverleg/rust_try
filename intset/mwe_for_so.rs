@@ -39,7 +39,7 @@ impl Int for usize {}
 
 //pub fn conv<T>(arg: i32) -> T {
 //where T: Div<i32>, T::Output: Rem<i32, Output = T>
-//pub fn conv<T>(arg: T) -> T where T: From<i32> + Div<T>, T::Output: T {
+    //pub fn conv<T>(arg: T) -> T where T: From<i32> + Div<T>, T::Output: T {
 pub fn stuff<T>(arg: T) -> T where T: From<u8> + Div<T, Output = T> + Rem<T, Output = T> + Clone {
     (T::from(BINS) / arg.clone()) % arg
 }
