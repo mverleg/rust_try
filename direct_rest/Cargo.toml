@@ -11,8 +11,16 @@ simple-server = "0.3.0"
 
 [[bin]]
 name = 'server'
-path = 'src/rest_server/server.rs'
+path = 'src/server/main.rs'
 
 [[bin]]
 name = 'client'
-path = 'src/main.rs'
+path = 'src/client/main.rs'
+
+[lib]
+name = 'data'
+path = 'src/data/lib.rs'
+
+[lib]
+name = 'iface'
+path = 'src/iface/lib.rs'
