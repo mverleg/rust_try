@@ -8,11 +8,11 @@ enum Bin<T> {
     Value(T),
 }
 
-pub struct IntSet<T> where T: From<u8> + Into<usize> + Rem<T, Output = T> + PartialEq<T> {
+pub struct IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output = T> + PartialEq<T> {
     bins: Vec<Bin<T>>,
 }
 
-impl<T> IntSet<T> where T: From<u8> + Into<usize> + Rem<T, Output = T> + PartialEq<T> {
+impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output = T> + PartialEq<T> {
     pub fn new() -> Self {
         let mut bins = Vec::<Bin<T>>::with_capacity(BINS.into());
         for _ in 0 .. BINS {
@@ -26,10 +26,10 @@ impl<T> IntSet<T> where T: From<u8> + Into<usize> + Rem<T, Output = T> + Partial
 //    pub fn stuff(&self, arg: T) -> T where Z: From<u8> + Div<Z, Output=Z> + Rem<Z, Output=Z> + Clone {
     pub fn add(&mut self, value: T) {
         // (T::from(BINS) / arg.clone()) % arg
-        let mut indx: usize = (value % T::from(BINS)).into();
-        let inbin = &self.bins[indx];
+        let indx: usize = (value.clone() % T::from(BINS)).into();
+        let inbin = &mut self.bins[indx];
         match inbin {
-            Bin::Empty => self.bins[indx] = Bin::Value(value),
+            Bin::Empty => *inbin = Bin::Value(value),
             Bin::Value(ref existing) => assert!(existing == &value),
         }
 //        T::from(BINS);
