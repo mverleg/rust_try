@@ -1,21 +1,23 @@
+#![feature(nll)]
 
 use std::ops::{Rem, Div};
 
 const BINS: u8 = 16;
 
-enum Bin<T> {
+enum Bin<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + PartialEq<T> {
     Empty,
     Value(T),
+    Sub(IntSet<T>),
 }
 
-pub struct IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output = T> + PartialEq<T> {
+pub struct IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + PartialEq<T> {
     bins: Vec<Bin<T>>,
 }
 
-impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output = T> + PartialEq<T> {
+impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + PartialEq<T> {
     pub fn new() -> Self {
         let mut bins = Vec::<Bin<T>>::with_capacity(BINS.into());
-        for _ in 0 .. BINS {
+        for _ in 0..BINS {
             bins.push(Bin::Empty);
         }
         IntSet {
@@ -23,19 +25,37 @@ impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output = T> +
         }
     }
 
-//    pub fn stuff(&self, arg: T) -> T where Z: From<u8> + Div<Z, Output=Z> + Rem<Z, Output=Z> + Clone {
-    pub fn add(&mut self, value: T) {
-        // (T::from(BINS) / arg.clone()) % arg
+    pub fn add(&mut self, value: T) -> bool {
+        // Can I prevent this clone for those tyoes that are Copy? Or can I assume the optimizer takes care of it?
         let indx: usize = (value.clone() % T::from(BINS)).into();
         let inbin = &mut self.bins[indx];
         match inbin {
-            Bin::Empty => *inbin = Bin::Value(value),
-            Bin::Value(ref existing) => assert!(existing == &value),
+            Bin::Empty => {
+                // Insert the value.
+                *inbin = Bin::Value(value);
+                true
+            }
+            Bin::Value(ref existing) => {
+                if existing == &value {
+                    // The value already exists, nothing to do.
+                    false
+                } else {
+                    // There is a collision, add a level.
+                    let mut subset = IntSet::new();
+                    // TODO @mverleg: are these clones needed?
+                    subset.add(existing.clone());
+                    subset.add(value.clone());
+                    *inbin = Bin::Sub(subset);
+                    true
+                }
+            }
+            // TODO @mverleg: implement
+            Bin::Sub(set) => unimplemented!(),
         }
-//        T::from(BINS);
     }
 }
 
+// TODO @mverleg: copy tests
 pub fn main() {
 //    let mut set = IntSet::new();
 //    set.add(1i16);
