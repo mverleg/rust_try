@@ -4,17 +4,17 @@ use std::ops::{Rem, Div};
 
 const BINS: u8 = 16;
 
-enum Bin<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + PartialEq<T> {
+enum Bin<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + Div<T, Output=T> + PartialEq<T> {
     Empty,
     Value(T),
     Sub(IntSet<T>),
 }
 
-pub struct IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + PartialEq<T> {
+pub struct IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + Div<T, Output=T> + PartialEq<T> {
     bins: Vec<Bin<T>>,
 }
 
-impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + PartialEq<T> {
+impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + Div<T, Output=T> + PartialEq<T> {
     pub fn new() -> Self {
         let mut bins = Vec::<Bin<T>>::with_capacity(BINS.into());
         for _ in 0..BINS {
@@ -40,17 +40,18 @@ impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + P
                     // The value already exists, nothing to do.
                     false
                 } else {
-                    // There is a collision, add a level.
+                    // There is a collision, add a level (stripping bits happens in the recursed call).
                     let mut subset = IntSet::new();
-                    // TODO @mverleg: are these clones needed?
                     subset.add(existing.clone());
-                    subset.add(value.clone());
+                    subset.add(value);
                     *inbin = Bin::Sub(subset);
                     true
                 }
             }
-            // TODO @mverleg: implement
-            Bin::Sub(set) => unimplemented!(),
+            Bin::Sub(subset) => {
+                // Pass on to the next level (stripping some bits of the number).
+                subset.add(value / T::from(BINS))
+            },
         }
     }
 }
