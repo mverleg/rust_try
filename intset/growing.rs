@@ -26,13 +26,13 @@ impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + D
     }
 
     pub fn add(&mut self, value: T) -> bool {
-        // Can I prevent this clone for those tyoes that are Copy? Or can I assume the optimizer takes care of it?
+        // todo: Can I prevent this clone for those types that are Copy? Or can I assume the optimizer takes care of it?
         let indx: usize = (value.clone() % T::from(BINS)).into();
-        let inbin = &mut self.bins[indx];
-        match inbin {
+        let seekbin = &mut self.bins[indx];
+        match seekbin {
             Bin::Empty => {
                 // Insert the value.
-                *inbin = Bin::Value(value);
+                *seekbin = Bin::Value(value);
                 true
             }
             Bin::Value(ref existing) => {
@@ -44,13 +44,33 @@ impl<T> IntSet<T> where T: Clone + From<u8> + Into<usize> + Rem<T, Output=T> + D
                     let mut subset = IntSet::new();
                     subset.add(existing.clone());
                     subset.add(value);
-                    *inbin = Bin::Sub(subset);
+                    *seekbin = Bin::Sub(subset);
                     true
                 }
             }
             Bin::Sub(subset) => {
                 // Pass on to the next level (stripping some bits of the number).
                 subset.add(value / T::from(BINS))
+            },
+        }
+    }
+
+    pub fn contains(&self, value: T) -> bool {
+        // todo: Can I prevent this clone for those tyoes that are Copy? Or can I assume the optimizer takes care of it?
+        let indx: usize = (value.clone() % T::from(BINS)).into();
+        let seekbin = &self.bins[indx];
+        match seekbin {
+            Bin::Empty => {
+                // The value was not found.
+                false
+            }
+            Bin::Value(ref existing) => {
+                // Found a value, found iff it matches
+                existing == &value
+            }
+            Bin::Sub(subset) => {
+                // Pass on to the next level
+                subset.contains(value / T::from(BINS))
             },
         }
     }
