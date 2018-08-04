@@ -111,12 +111,6 @@ impl<T> IntSet<T> where
     }
 
     pub fn contains(&self, value: T) -> bool {
-        println!("");
-        println!("value {:?}", value.clone());
-        println!("bins  {:?}", BINS);
-        println!("from  {:?}", T::try_from(BINS));
-        println!("mod   {:?}", value.clone().modulo(T::try_from(BINS).unwrap()));
-        println!("into  {:?}", (value.clone().modulo(T::try_from(BINS).unwrap())).try_into().unwrap());
         let indx: usize = (value.clone().modulo(T::try_from(BINS).unwrap())).try_into().unwrap();
         let seekbin = &self.bins[indx];
         match seekbin {
@@ -165,10 +159,10 @@ mod tests {
         for k in -142 .. 142 {
             assert!(set.contains(k));
         }
-        for k in -1024i32 .. 0i32 {
+        for k in -1500 .. -142 {
             assert!(!set.contains(k));
         }
-        for k in 142 .. 1024 {
+        for k in 142 .. 1500 {
             assert!(!set.contains(k));
         }
 //        assert_eq!(set.count(), 142);
@@ -197,7 +191,10 @@ mod tests {
         for k in 1 .. 9 {
             assert!(set.contains(k * 2i32.pow(24)));
         }
-        for k in -142 .. 142 {
+        for k in -142 .. 1 {
+            assert!(!set.contains(k));
+        }
+        for k in 9 .. 142 {
             assert!(!set.contains(k));
         }
         assert!(!set.contains(2i32.pow(23)));
