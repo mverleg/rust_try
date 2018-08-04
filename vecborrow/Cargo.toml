@@ -1,0 +1,10 @@
+[package]
+name = "vecborrow"
+version = "0.1.0"
+authors = ["Mark <mverleg.noreply@gmail.com>"]
+
+[dependencies]
+
+[[bin]]
+name = "vecborrow"
+path = "main.rs"

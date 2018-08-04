@@ -87,12 +87,14 @@ impl<T> IntSet<T> where
         match seekbin {
             Bin::Empty => {
                 // Insert the value.
+                println!(" empty {:?}", value);  // todo
                 *seekbin = Bin::Value(value);
                 true
             }
             Bin::Value(ref existing) => {
                 if existing == &value {
                     // The value already exists, nothing to do.
+                    println!(" empty {:?}", value);
                     false
                 } else {
                     // There is a collision, add a level (stripping bits happens in the recursed call).
@@ -128,6 +130,16 @@ impl<T> IntSet<T> where
             },
         }
     }
+
+    pub fn count(&self) -> usize {
+        self.bins.iter().map(|it| {
+            match it {
+                Bin::Empty => 0,
+                Bin::Value(_) => 1,
+                Bin::Sub(subset) => subset.count(),
+            }
+        }).sum()
+    }
 }
 
 pub fn main() {}
@@ -135,30 +147,32 @@ pub fn main() {}
 #[cfg(test)]
 mod tests {
     use super::IntSet;
-    use std::ops::RangeBounds;
 
     #[test]
     fn test_int_set_types() {
-        let set: IntSet<i8> = IntSet::new();
-        let set: IntSet<i16> = IntSet::new();
-        let set: IntSet<i32> = IntSet::new();
-        let set: IntSet<i64> = IntSet::new();
-        let set: IntSet<u8> = IntSet::new();
-        let set: IntSet<u16> = IntSet::new();
-        let set: IntSet<u32> = IntSet::new();
-        let set: IntSet<u64> = IntSet::new();
-        let set: IntSet<usize> = IntSet::new();
+        let _: IntSet<i8> = IntSet::new();
+        let _: IntSet<i16> = IntSet::new();
+        let _: IntSet<i32> = IntSet::new();
+        let _: IntSet<i64> = IntSet::new();
+        let _: IntSet<u8> = IntSet::new();
+        let _: IntSet<u16> = IntSet::new();
+        let _: IntSet<u32> = IntSet::new();
+        let _: IntSet<u64> = IntSet::new();
+        let _: IntSet<usize> = IntSet::new();
     }
 
     #[test]
     fn test_int_set_basic() {
         let mut set = IntSet::new();
         for k in -142 .. 142 {
-            set.add(k);
+            println!("{:?}", k);
+            assert!(set.add(k));
         }
         for k in -142 .. 142 {
             assert!(set.contains(k));
         }
+        println!("{:?}", set);
+        assert_eq!(2*142, set.count());
         for k in -1500 .. -142 {
             assert!(!set.contains(k));
         }
@@ -198,6 +212,6 @@ mod tests {
             assert!(!set.contains(k));
         }
         assert!(!set.contains(2i32.pow(23)));
-//        assert_eq!(set.count(), 8);
+        assert_eq!(set.count(), 8);
     }
 }
