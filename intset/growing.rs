@@ -10,28 +10,27 @@ const BINS: u8 = 16;
 
 /// Define a modulo operation, in the mathematical sense.
 /// This differs from Rem because the result is always non-negative.
-trait Modulo<T> {
+pub trait Modulo<T> {
     type Output;
 
     #[inline]
-    fn modulo(&self, other: &T) -> Self::Output;
+    fn modulo(self, other: T) -> Self::Output;
 }
 
 /// Implement modulo operation for types that implement Rem, Add and Clone.
 // Add and Clone are needed to shift the value by U if it is below zero.
-// TODO @mverleg: describe constraint on output type
 impl<U, T> Modulo<T> for U
     where
         T: Clone,
-        U: Rem<T> + Clone,
-        <U as Rem<T>>::Output: Add<U>,
-        <<U as Rem<T>>::Output as Add<U>>::Output: Rem<T>,
+        U: Rem<T>,
+        <U as Rem<T>>::Output: Add<T>,
+        <<U as Rem<T>>::Output as Add<T>>::Output: Rem<T>
     {
-    type Output = <<<U as Rem<T>>::Output as Add<U>>::Output as Rem<T>>::Output;
+    type Output = <<<U as Rem<T>>::Output as Add<T>>::Output as Rem<T>>::Output;
 
     #[inline]
-    default fn modulo(&self, other: &T) -> Self::Output {
-        ((self.clone() % other.clone()) + self.clone()) % other.clone()
+    default fn modulo(self, other: T) -> Self::Output {
+        ((self % other.clone()) + other.clone()) % other
     }
 }
 
@@ -39,14 +38,14 @@ impl<U, T> Modulo<T> for U
 impl<U, T> Modulo<T> for U
     where
         T: Clone + Copy,
-        U: Rem<T> + Clone + Copy,
-        <U as Rem<T>>::Output: Add<U>,
-        <<U as Rem<T>>::Output as Add<U>>::Output: Rem<T>,
+        U: Rem<T>,
+        <U as Rem<T>>::Output: Add<T>,
+        <<U as Rem<T>>::Output as Add<T>>::Output: Rem<T>
     {
 
     #[inline]
-    fn modulo(&self, other: &T) -> Self::Output {
-        ((*self % *other) + *self) % *other
+    fn modulo(self, other: T) -> Self::Output {
+        ((self % other) + other) % other
     }
 }
 
@@ -54,7 +53,7 @@ impl<U, T> Modulo<T> for U
 #[derive(Debug)]
 enum Bin<T> where
         // todo: remove Debug
-        T: Debug + Clone + TryFrom<u8> + TryInto<usize> + Rem<T, Output=T> + Div<T, Output=T> + PartialEq<T>,
+        T: Debug + Clone + TryFrom<u8> + TryInto<usize> + Modulo<T, Output=T> + Div<T, Output=T> + PartialEq<T>,
         <T as TryFrom<u8>>::Error: Debug, <T as TryInto<usize>>::Error: Debug {
     Empty,
     Value(T),
@@ -63,13 +62,13 @@ enum Bin<T> where
 
 #[derive(Debug)]
 pub struct IntSet<T> where
-        T: Debug + Clone + TryFrom<u8> + TryInto<usize> + Rem<T, Output=T> + Div<T, Output=T> + PartialEq<T>,
+        T: Debug + Clone + TryFrom<u8> + TryInto<usize> + Modulo<T, Output=T> + Div<T, Output=T> + PartialEq<T>,
         <T as TryFrom<u8>>::Error: Debug, <T as TryInto<usize>>::Error: Debug {
     bins: Vec<Bin<T>>,
 }
 
 impl<T> IntSet<T> where
-        T: Debug + Clone + TryFrom<u8> + TryInto<usize> + Rem<T, Output=T> + Div<T, Output=T> + PartialEq<T>,
+        T: Debug + Clone + TryFrom<u8> + TryInto<usize> + Modulo<T, Output=T> + Div<T, Output=T> + PartialEq<T>,
         <T as TryFrom<u8>>::Error: Debug, <T as TryInto<usize>>::Error: Debug {
     pub fn new() -> Self {
         let mut bins = Vec::<Bin<T>>::with_capacity(BINS.into());
@@ -83,7 +82,7 @@ impl<T> IntSet<T> where
 
     pub fn add(&mut self, value: T) -> bool {
         // Hopefully the compiler takes care of removing this 'clone'.
-        let indx: usize = (value.clone() % T::try_from(BINS).unwrap()).try_into().unwrap();
+        let indx: usize = (value.clone().modulo(T::try_from(BINS).unwrap())).try_into().unwrap();
         let seekbin = &mut self.bins[indx];
         match seekbin {
             Bin::Empty => {
@@ -116,9 +115,9 @@ impl<T> IntSet<T> where
         println!("value {:?}", value.clone());
         println!("bins  {:?}", BINS);
         println!("from  {:?}", T::try_from(BINS));
-        println!("mod   {:?}", value.clone() % T::try_from(BINS).unwrap());
-        println!("into  {:?}", (value.clone() % T::try_from(BINS).unwrap()).try_into());
-        let indx: usize = (value.clone() % T::try_from(BINS).unwrap()).try_into().unwrap();
+        println!("mod   {:?}", value.clone().modulo(T::try_from(BINS).unwrap()));
+        println!("into  {:?}", (value.clone().modulo(T::try_from(BINS).unwrap())).try_into().unwrap());
+        let indx: usize = (value.clone().modulo(T::try_from(BINS).unwrap())).try_into().unwrap();
         let seekbin = &self.bins[indx];
         match seekbin {
             Bin::Empty => {
