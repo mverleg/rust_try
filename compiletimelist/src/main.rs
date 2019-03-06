@@ -5,8 +5,8 @@
 trait ListElement: Sized {
     fn chain<T: ListElement>(self, other: T) -> ListItem<Self, T> {
         ListItem {
-            value: self,
-            next: other,
+            left: self,
+            right: other,
         }
     }
 }
@@ -15,25 +15,24 @@ impl<T: Sized> ListElement for T {}
 
 #[derive(Debug)]
 struct ListItem<T, U> {
-    value: T,
-    next: U,
+    left: T,
+    right: U,
 }
 
 impl<T, U> ListItem<T, U> {
     fn get(&self) -> &U {
-        &self.next
+        &self.right
     }
 
-    fn next(&self) -> &T {
-        &self.value
+    fn prev(&self) -> &T {
+        &self.left
     }
 }
 
 fn main() {
+    // Create the list (in reverse order)
     let li = "hello".chain("world").chain("this").chain("is").chain("Mark").chain("speaking").chain("!");
-    println!("{:?}", li);
-    println!("{:?}", li.get());
-    println!("{:?}", li.next().get());
-    println!("{:?}", li.next().next().get());
-    println!("{:?}", li.next().next().next().get());
+
+    // Index the third item from the end
+    println!("{:?}", li.prev().prev().prev().get());
 }
