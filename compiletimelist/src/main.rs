@@ -25,6 +25,16 @@ struct ListItem<T, U> {
     next: U,
 }
 
+impl<T, U> ListItem<T, U> {
+    fn next(&self) -> &U {
+        &self.next
+    }
+
+    fn get(&self) -> &T {
+        &self.value
+    }
+}
+
 
 //
 //enum ListLink<T: Elem> {
@@ -53,14 +63,15 @@ struct ListItem<T, U> {
 // impl<T: Elem> Elem for ElemType<T> {}
 
 fn main() {
-    let li = ListItem {
-        value: "hello",
-        next: ListItem {
-            value: "world",
-            next: ()
-        }
-    };
+    let li = "hello".chain("world").chain("!");
+//    let li = ListItem {
+//        value: "hello",
+//        next: ListItem {
+//            value: "world",
+//            next: ()
+//        }
+//    };
 //        .add("hello")
 //        .add("world");
-    println!("{:?}", li);
+    println!("{:?}", li.get());
 }
