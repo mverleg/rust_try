@@ -2,16 +2,27 @@
 /// Inspired by:
 /// https://gist.github.com/jFransham/369a86eff00e5f280ed25121454acec1#avoid-boxtrait
 
-#[derive(Debug)]
-enum ListLink<T> {
-    End,
-    Item(ListItem<T>),
+trait ListElement: Sized {
+    fn chain<T: ListElement>(self, other: T) -> ListItem<Self, T> {
+        ListItem {
+            value: self,
+            next: other,
+        }
+    }
 }
 
+impl<T: Sized> ListElement for T {}
+
+//#[derive(Debug)]
+//enum ListLink<T> {
+//    End,
+//    Item(ListItem<T>),
+//}
+
 #[derive(Debug)]
-struct ListItem<T> {
+struct ListItem<T, U> {
     value: T,
-    next: ListLink<T>,
+    next: U,
 }
 
 
@@ -44,10 +55,10 @@ struct ListItem<T> {
 fn main() {
     let li = ListItem {
         value: "hello",
-        next: ListLink::Item(ListItem {
+        next: ListItem {
             value: "world",
-            next: ListLink::End
-        })
+            next: ()
+        }
     };
 //        .add("hello")
 //        .add("world");
