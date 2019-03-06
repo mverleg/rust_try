@@ -13,12 +13,6 @@ trait ListElement: Sized {
 
 impl<T: Sized> ListElement for T {}
 
-//#[derive(Debug)]
-//enum ListLink<T> {
-//    End,
-//    Item(ListItem<T>),
-//}
-
 #[derive(Debug)]
 struct ListItem<T, U> {
     value: T,
@@ -26,52 +20,20 @@ struct ListItem<T, U> {
 }
 
 impl<T, U> ListItem<T, U> {
-    fn next(&self) -> &U {
+    fn get(&self) -> &U {
         &self.next
     }
 
-    fn get(&self) -> &T {
+    fn next(&self) -> &T {
         &self.value
     }
 }
 
-
-//
-//enum ListLink<T: Elem> {
-//    End(T),
-//    Prev(T, T)
-//}
-//
-//// impl<T: Elem> Elem for ListLink<T> {}
-//
-//impl<T: Elem> ListLink<T> {
-//    fn add(self, item: T) -> ListLink<T> {
-//        ListLink::Prev(self, item)
-//    }
-//}
-
-// impl<T: Elem> ElemType<T> {
-// //    fn get(&self) -> T {
-// //
-// //    }
-
-//     fn add(self, value: T) -> ElemType<T> {
-//         ElemType::Item(value)
-//     }
-// }
-
-// impl<T: Elem> Elem for ElemType<T> {}
-
 fn main() {
-    let li = "hello".chain("world").chain("!");
-//    let li = ListItem {
-//        value: "hello",
-//        next: ListItem {
-//            value: "world",
-//            next: ()
-//        }
-//    };
-//        .add("hello")
-//        .add("world");
+    let li = "hello".chain("world").chain("this").chain("is").chain("Mark").chain("speaking").chain("!");
+    println!("{:?}", li);
     println!("{:?}", li.get());
+    println!("{:?}", li.next().get());
+    println!("{:?}", li.next().next().get());
+    println!("{:?}", li.next().next().next().get());
 }
