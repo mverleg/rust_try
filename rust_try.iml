@@ -18,6 +18,11 @@
       <sourceFolder url="file://$MODULE_DIR$/runner_extern/examples" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/runner_extern/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/runner_extern/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/clap_simple/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/clap_simple/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/clap_simple/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/clap_simple/benches" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/clap_simple/target" />
       <excludeFolder url="file://$MODULE_DIR$/enum_types/target" />
       <excludeFolder url="file://$MODULE_DIR$/runner_extern/runner_extern/target" />
       <excludeFolder url="file://$MODULE_DIR$/runner_extern/target" />
