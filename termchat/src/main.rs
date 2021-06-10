@@ -38,14 +38,17 @@ enum Cmd {
 
 fn clear_line(out: &mut Stdout, width: u16) -> Result<()> {
     out.queue(cursor::MoveToColumn(0))?;
-    print!("{}", ".".repeat(width as usize));
+    print!("{}", " ".repeat((width - 1) as usize));
+    out.queue(cursor::MoveDown(1))?;
+    out.queue(cursor::MoveToColumn(0))?;
     Ok(())
 }
 
 fn save_lines(out: &mut Stdout, width: u16, height: u16) -> Result<()> {
+    out.queue(cursor::MoveUp(1))?;
     clear_line(out, width)?;
-    print!("{}", "|\n".repeat(height as usize));
-    //out.queue(cursor::MoveUp(height))?;
+    print!("{}", "\n".repeat(height as usize));
+    out.queue(cursor::MoveUp(height + 1))?;
     out.flush()
 }
 
@@ -54,7 +57,7 @@ fn restore_lines() {}
 fn show_chat(out: &mut Stdout, lines: u16) -> Result<()> {
     let (width, height) = terminal::size()?;
     let lines = if lines == 0 || lines > height {
-        height
+        height - 5
     } else {
         lines
     };
@@ -73,7 +76,6 @@ fn show_chat(out: &mut Stdout, lines: u16) -> Result<()> {
 fn main() {
     let args = Args::from_args();
     let cmd = args.cmd.unwrap_or_else(|| Cmd::Open(OpenArgs::default()));
-    println!("{:?}", cmd);
     let mut out = stdout();
     sleep(Duration::from_millis(200));
     match cmd {
