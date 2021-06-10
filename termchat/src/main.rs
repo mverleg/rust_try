@@ -1,14 +1,12 @@
-use ::structopt::StructOpt;
+use ::std::io::{Stdout, stdout};
+use ::std::thread::sleep;
+use ::std::time::Duration;
 
-//TODO @mark:
-use ::cursive::{
-    traits::*,
-    views::{
-        Checkbox, Dialog, EditView, LinearLayout, ListView, SelectView,
-        TextArea, TextView,
-    },
-};
-use cursive::CursiveRunnable;
+use ::crossterm::{cursor, QueueableCommand};
+use ::crossterm::Result;
+use ::crossterm::terminal;
+use ::structopt::StructOpt;
+use std::io::Write;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "termchat", about = "Welcome to chat in your console!")]
@@ -38,38 +36,51 @@ enum Cmd {
     HasMessage,
 }
 
-fn show_chat(siv: &mut CursiveRunnable, height: u16) {
-    siv.add_layer(
-        Dialog::new()
-            .content(
-                ListView::new()
-                    .with(|list| {
-                        // We can also add children procedurally
-                        for i in 0..5 {
-                            list.add_child(
-                                &format!("Item {}", i),
-                                EditView::new(),
-                            );
-                        }
-                    })
-                    .scrollable(),
-            ),
-    );
+fn clear_line(out: &mut Stdout, width: u16) -> Result<()> {
+    out.queue(cursor::MoveToColumn(0))?;
+    print!("{}", ".".repeat(width as usize));
+    Ok(())
+}
 
-    eprintln!("before");
-    siv.run();
-    eprintln!("after");
+fn save_lines(out: &mut Stdout, width: u16, height: u16) -> Result<()> {
+    clear_line(out, width)?;
+    print!("{}", "|\n".repeat(height as usize));
+    //out.queue(cursor::MoveUp(height))?;
+    out.flush()
+}
+
+fn restore_lines() {}
+
+fn show_chat(out: &mut Stdout, lines: u16) -> Result<()> {
+    let (width, height) = terminal::size()?;
+    let lines = if lines == 0 || lines > height {
+        height
+    } else {
+        lines
+    };
+    save_lines(out, width, lines)?;
+
+    // for _ in 0..lines {
+    //     stdout()
+    //         .queue(cursor::(1))?
+    //         .flush()?;
+    //     sleep(Duration::from_millis(200));
+    // }
+
+    Ok(())
 }
 
 fn main() {
     let args = Args::from_args();
     let cmd = args.cmd.unwrap_or_else(|| Cmd::Open(OpenArgs::default()));
-    let mut siv = cursive::default();
     println!("{:?}", cmd);
+    let mut out = stdout();
+    sleep(Duration::from_millis(200));
     match cmd {
         Cmd::Open(_) => unimplemented!(),
-        Cmd::One(open) => show_chat(&mut siv, open.lines),
+        Cmd::One(open) => show_chat(&mut out, open.lines),
         Cmd::RunDaemon => unimplemented!(),
         Cmd::HasMessage => unimplemented!(),
-    }
+    }.expect("an error happened");
+    sleep(Duration::from_millis(400));
 }
