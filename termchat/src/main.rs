@@ -6,7 +6,11 @@ use ::crossterm::{cursor, QueueableCommand};
 use ::crossterm::Result;
 use ::crossterm::terminal;
 use ::structopt::StructOpt;
-use std::io::Write;
+use ::std::io::Write;
+use ::std::env::current_dir;
+
+use ::whoami::username;
+use ::whoami::hostname;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "termchat", about = "Welcome to chat in your console!")]
@@ -52,7 +56,12 @@ fn save_lines(out: &mut Stdout, width: u16, height: u16) -> Result<()> {
     out.flush()
 }
 
-fn restore_lines() {}
+fn get_prompt() -> String {
+    let dir = current_dir()
+        .map(|mut pth| pth.file_name().unwrap())
+        .unwrap_or_else("msg");
+    format!("{}@{} {}$ ", username(), hostname(), dir)
+}
 
 fn show_chat(out: &mut Stdout, lines: u16) -> Result<()> {
     let (width, height) = terminal::size()?;
@@ -61,7 +70,10 @@ fn show_chat(out: &mut Stdout, lines: u16) -> Result<()> {
     } else {
         lines
     };
+    //TODO @mark: rename
     save_lines(out, width, lines)?;
+    //TODO @mark: use
+    get_prompt()
 
     // for _ in 0..lines {
     //     stdout()
