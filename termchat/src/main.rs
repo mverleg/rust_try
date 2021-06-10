@@ -7,13 +7,19 @@ struct Args {
     cmd: Option<Cmd>,
 }
 
+#[derive(Debug, StructOpt, Default)]
+struct OpenArgs {
+    #[structopt(short = "l", long = "lines", help = "Number of lines of chat to show.")]
+    lines: Option<u16>,
+}
+
 #[derive(Debug, StructOpt)]
 enum Cmd {
     #[structopt(about = "Start termchat in the main screen (contact list).")]
-    Open,
+    Open(OpenArgs),
 
     #[structopt(about = "Open termchat at the oldest unread message.")]
-    One,
+    One(OpenArgs),
 
     #[structopt(about = "Start the daemon in blocking mode. This happens automatically.")]
     RunDaemon,
@@ -24,6 +30,12 @@ enum Cmd {
 
 fn main() {
     let args = Args::from_args();
-    let cmd = args.cmd.unwrap_or_else(|| Cmd::Open);
+    let cmd = args.cmd.unwrap_or_else(|| Cmd::Open(OpenArgs::default()));
     println!("{:?}", cmd);
+    match cmd {
+        Open => {},
+        One => {},
+        RunDaemon => unimplemented!(),
+        HasMessage => unimplemented!(),
+    }
 }
